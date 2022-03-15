@@ -15,7 +15,7 @@ def repo_button_click():
     if repo_language_choice == "Python":
         if os.path.exists("task1"):
             os.chdir("task1")
-            exec(open("123213123"))
+            exec(open(""))
 
 
 def open_file():
