@@ -11,11 +11,11 @@ import subprocess
 
 
 def repo_button_click():
-
-    if repo_language_choice == "Python":
+    if repo_language_choice.get() == "Python":
         if os.path.exists("task1"):
             os.chdir("task1")
-            exec(open(""))
+            script = subprocess.run(["python", "1.py", "5", "4"], stdout=subprocess.PIPE)
+            txt_test.insert(INSERT, script.stdout)
 
 
 def open_file():
@@ -46,6 +46,7 @@ def open_file():
         rad3.place(x=10, y=225)
     if os.path.exists("task4"):
         rad4.place(x=10, y=245)
+
 
 ##############################################
 # Интерфейс
