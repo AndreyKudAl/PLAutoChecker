@@ -8,14 +8,23 @@ import zipfile
 import os
 import shutil
 import subprocess
+import pandas as pd
+
+
+def first_task():
+    for i in range(len(test1.index)):
+        script = subprocess.run(["python", "1.py", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
+                                stdout=subprocess.PIPE)
+        txt_test.insert(INSERT,
+                        "№" + str(i) + " Вывод: " + str(script.stdout)[2:-1] + " Правильный ответ: " + str(
+                            test1.loc[i, 'right_answer']) + "\n")
 
 
 def repo_button_click():
     if repo_language_choice.get() == "Python":
         if os.path.exists("task1"):
             os.chdir("task1")
-            script = subprocess.run(["python", "1.py", "5", "4"], stdout=subprocess.PIPE)
-            txt_test.insert(INSERT, script.stdout)
+            first_task()
 
 
 def open_file():
@@ -35,6 +44,9 @@ def open_file():
     txt_log.insert(INSERT, "Рабочая папка изменена  на:" + os.getcwd() + "\n")
     author = open("author.txt", "r")
     author_info = author.readlines()
+
+    author.close()
+
     repo_author_info.configure(
         text="Фамилия: " + author_info[0] + "Имя: " + author_info[1] + "Язык: " + author_info[2])
 
@@ -50,6 +62,7 @@ def open_file():
 
 ##############################################
 # Интерфейс
+test1 = pd.read_csv("test_data/data_1.csv", sep=' ')
 file = ''
 window = Tk()  # Создание окна
 window.title("PLAutoChecker v.0.1")  # Название окна
