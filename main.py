@@ -12,12 +12,31 @@ import pandas as pd
 
 
 def first_task():
+    rw = ''
     for i in range(len(test1.index)):
         script = subprocess.run(["python", "1.py", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
                                 stdout=subprocess.PIPE)
-        txt_test.insert(INSERT,
-                        "№" + str(i) + " Вывод: " + str(script.stdout)[2:-1] + " Правильный ответ: " + str(
-                            test1.loc[i, 'right_answer']) + "\n")
+        if int(str(script.stdout)[2:-1]) == test1.loc[i, 'right_answer']:
+            rw = 'YES'
+        else:
+            rw = 'ERROR'
+        test_output_1.loc[len(test_output_1.index)] = [str(script.stdout)[2:-1], str(test1.loc[i, 'right_answer']), rw]
+
+
+def rad_click1():
+    txt_test.insert(INSERT, test_output_1)
+
+
+def rad_click2():
+    txt_test.insert(INSERT, test_output_1)
+
+
+def rad_click3():
+    txt_test.insert(INSERT, test_output_1)
+
+
+def rad_click4():
+    txt_test.insert(INSERT, test_output_1)
 
 
 def repo_button_click():
@@ -62,6 +81,12 @@ def open_file():
 
 ##############################################
 # Интерфейс
+test_output_1 = pd.DataFrame({
+    'output': [],
+    'right_answer': [],
+    'RW': []
+
+})
 test1 = pd.read_csv("test_data/data_1.csv", sep=' ')
 file = ''
 window = Tk()  # Создание окна
@@ -112,10 +137,11 @@ tasks_head = Label(window,
                    padx=5,
                    anchor=W)
 
-rad1 = Radiobutton(window, text='task1', value=1)
-rad2 = Radiobutton(window, text='task2', value=2)
-rad3 = Radiobutton(window, text='task3', value=3)
-rad4 = Radiobutton(window, text='task4', value=4)
+rad = IntVar()
+rad1 = Radiobutton(window, text='task1', variable=rad, value=1)
+rad2 = Radiobutton(window, text='task2', variable=rad, value=2)
+rad3 = Radiobutton(window, text='task3', variable=rad, value=3)
+rad4 = Radiobutton(window, text='task4', variable=rad, value=4)
 
 repo_language_choice = Combobox(window, width=15)
 repo_language_choice['values'] = ("Python", "Java", "C++")
