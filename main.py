@@ -22,21 +22,15 @@ def first_task():
             rw = 'ERROR'
         test_output_1.loc[len(test_output_1.index)] = [str(script.stdout)[2:-1], str(test1.loc[i, 'right_answer']), rw]
 
-
-def rad_click1():
-    txt_test.insert(INSERT, test_output_1)
+    txt_log.insert(INSERT, "Task1 проверен!\n")
 
 
-def rad_click2():
-    txt_test.insert(INSERT, test_output_1)
-
-
-def rad_click3():
-    txt_test.insert(INSERT, test_output_1)
-
-
-def rad_click4():
-    txt_test.insert(INSERT, test_output_1)
+def output_result():
+    txt_test.delete(1.0,END)
+    if tasks_choice.get() == "task1":
+        txt_test.insert(INSERT, test_output_1)
+    # if rad.get() == 1:
+    #     txt_test.insert(INSERT, test_output_1)
 
 
 def repo_button_click():
@@ -44,6 +38,8 @@ def repo_button_click():
         if os.path.exists("task1"):
             os.chdir("task1")
             first_task()
+
+    output_button.place(x=10, y=310)
 
 
 def open_file():
@@ -70,13 +66,18 @@ def open_file():
         text="Фамилия: " + author_info[0] + "Имя: " + author_info[1] + "Язык: " + author_info[2])
 
     if os.path.exists("task1"):  # Проверка какие задания сделаны
-        rad1.place(x=10, y=185)
+        tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["task1"])
+
     if os.path.exists("task2"):
-        rad2.place(x=10, y=205)
+        tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["task2"])
+
     if os.path.exists("task3"):
-        rad3.place(x=10, y=225)
+        tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["task3"])
+
     if os.path.exists("task4"):
-        rad4.place(x=10, y=245)
+        tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["task4"])
+
+
 
 
 ##############################################
@@ -87,11 +88,13 @@ test_output_1 = pd.DataFrame({
     'RW': []
 
 })
+
 test1 = pd.read_csv("test_data/data_1.csv", sep=' ')
 file = ''
 window = Tk()  # Создание окна
 window.title("PLAutoChecker v.0.1")  # Название окна
 window.geometry('600x500')  # Размер окна
+window.resizable(False, False)
 
 menu = Menu(window)
 new_menu = Menu(menu, tearoff=0)
@@ -137,15 +140,16 @@ tasks_head = Label(window,
                    padx=5,
                    anchor=W)
 
-rad = IntVar()
-rad1 = Radiobutton(window, text='task1', variable=rad, value=1)
-rad2 = Radiobutton(window, text='task2', variable=rad, value=2)
-rad3 = Radiobutton(window, text='task3', variable=rad, value=3)
-rad4 = Radiobutton(window, text='task4', variable=rad, value=4)
-
 repo_language_choice = Combobox(window, width=15)
 repo_language_choice['values'] = ("Python", "Java", "C++")
+repo_language_choice['state'] = 'readonly'
 repo_language_choice.current(0)
+
+tasks_choice = Combobox(window, width=15)
+tasks_choice['state'] = 'readonly'
+
+txt_test = scrolledtext.ScrolledText(window, width=40, height=17)
+txt_log = scrolledtext.ScrolledText(window, width=70, height=6)
 
 repo_button = Button(window,
                      text="Проверить",
@@ -171,13 +175,25 @@ delete_button = Button(window,
                        padx=3,
                        bg='white')
 
-txt_test = scrolledtext.ScrolledText(window, width=40, height=17)
-txt_log = scrolledtext.ScrolledText(window, width=70, height=6)
+output_button = Button(window,
+                       text="Вывести",
+                       command=output_result,
+                       width=30,
+                       height=2,
+                       padx=3,
+                       bg='white')
+
+rad = IntVar()
+# rad1 = Radiobutton(window, text='task1', variable=rad, value=1)
+# rad2 = Radiobutton(window, text='task2', variable=rad, value=2)
+# rad3 = Radiobutton(window, text='task3', variable=rad, value=3)
+# rad4 = Radiobutton(window, text='task4', variable=rad, value=4)
 
 repo_author_info_head.place(x=10, y=5)
 repo_author_info.place(x=10, y=25)
 
-tasks_head.place(x=10, y=165)
+tasks_head.place(x=10, y=170)
+tasks_choice.place(x=121, y=170)
 
 repo_language_label.place(x=10, y=85)
 repo_language_choice.place(x=121, y=85)
@@ -186,6 +202,7 @@ txt_log_head.place(x=10, y=370)
 txt_test.place(x=250, y=25)
 txt_log.place(x=10, y=390)
 repo_button.place(x=10, y=120)
+
 sort_button.place(x=250, y=310)
 delete_button.place(x=420, y=310)
 
