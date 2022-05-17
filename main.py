@@ -3,7 +3,7 @@ from tkinter import filedialog
 from tkinter import Menu
 from tkinter import scrolledtext
 from tkinter.ttk import Combobox
-from tkinter.ttk import Radiobutton
+import tkinter.messagebox as mb
 import zipfile
 import os
 import shutil
@@ -11,29 +11,42 @@ import subprocess
 import pandas as pd
 
 
+def show_warning():
+    msg = "Сначала необходимо открыть файл!"
+    mb.showwarning("Предупреждение", msg)
+
+
 def first_task():
     rw = ''
     for i in range(len(test1.index)):
         script = subprocess.run(["python", "1.py", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
                                 stdout=subprocess.PIPE)
-        if int(str(script.stdout)[2:-1]) == test1.loc[i, 'right_answer']:
+        if int(str(script.stdout)[2:-1]) == int(test1.loc[i, 'right_answer']):
             rw = 'YES'
         else:
             rw = 'ERROR'
         test_output_1.loc[len(test_output_1.index)] = [str(script.stdout)[2:-1], str(test1.loc[i, 'right_answer']), rw]
+        print()
 
     txt_log.insert(INSERT, "Task1 проверен!\n")
 
 
 def output_result():
-    txt_test.delete(1.0,END)
+    txt_test.delete(1.0, END)
     if tasks_choice.get() == "task1":
         txt_test.insert(INSERT, test_output_1)
-    # if rad.get() == 1:
-    #     txt_test.insert(INSERT, test_output_1)
+
+
+def sort_errors():
+    txt_test.delete(1.0, END)
+    if tasks_choice.get() == "task1":
+        txt_test.insert(INSERT, test_output_1.sort_values(by="RW"))
 
 
 def repo_button_click():
+    if file == '':
+        show_warning()
+        return
     if repo_language_choice.get() == "Python":
         if os.path.exists("task1"):
             os.chdir("task1")
@@ -44,6 +57,11 @@ def repo_button_click():
 
 def open_file():
     global file
+
+    test_output_1.drop(test_output_1.index, inplace=True)  # Очищаем ДатаФрейм перед следующим прогоном
+
+    os.chdir(default_path)
+    tasks_choice['values'] = []
     file = filedialog.askopenfilename()
     txt_log.insert(INSERT, "Открыт файл: " + file + "\n")
 
@@ -78,22 +96,22 @@ def open_file():
         tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["task4"])
 
 
-
-
 ##############################################
 # Интерфейс
+default_path = os.getcwd()
 test_output_1 = pd.DataFrame({
     'output': [],
     'right_answer': [],
     'RW': []
 
 })
+pd.options.display.max_rows = 2000  # Увеличиваем максимальный вывод значений датафрейма
 
 test1 = pd.read_csv("test_data/data_1.csv", sep=' ')
 file = ''
 window = Tk()  # Создание окна
 window.title("PLAutoChecker v.0.1")  # Название окна
-window.geometry('600x500')  # Размер окна
+window.geometry('875x500')  # Размер окна
 window.resizable(False, False)
 
 menu = Menu(window)
@@ -148,8 +166,8 @@ repo_language_choice.current(0)
 tasks_choice = Combobox(window, width=15)
 tasks_choice['state'] = 'readonly'
 
-txt_test = scrolledtext.ScrolledText(window, width=40, height=17)
-txt_log = scrolledtext.ScrolledText(window, width=70, height=6)
+txt_test = scrolledtext.ScrolledText(window, width=75, height=17)
+txt_log = scrolledtext.ScrolledText(window, width=105, height=6)
 
 repo_button = Button(window,
                      text="Проверить",
@@ -160,20 +178,20 @@ repo_button = Button(window,
                      bg='white')
 
 sort_button = Button(window,
-                     text="Сортировка",
-                     command=repo_button_click,
+                     text="Сортировка по индексу",
+                     command=output_result,
                      width=20,
                      height=2,
                      padx=3,
                      bg='white')
 
-delete_button = Button(window,
-                       text="Очистить",
-                       command=repo_button_click,
-                       width=20,
-                       height=2,
-                       padx=3,
-                       bg='white')
+sort2_button = Button(window,
+                      text="Сортировка по ошибкам",
+                      command=sort_errors,
+                      width=20,
+                      height=2,
+                      padx=3,
+                      bg='white')
 
 output_button = Button(window,
                        text="Вывести",
@@ -182,12 +200,6 @@ output_button = Button(window,
                        height=2,
                        padx=3,
                        bg='white')
-
-rad = IntVar()
-# rad1 = Radiobutton(window, text='task1', variable=rad, value=1)
-# rad2 = Radiobutton(window, text='task2', variable=rad, value=2)
-# rad3 = Radiobutton(window, text='task3', variable=rad, value=3)
-# rad4 = Radiobutton(window, text='task4', variable=rad, value=4)
 
 repo_author_info_head.place(x=10, y=5)
 repo_author_info.place(x=10, y=25)
@@ -204,6 +216,6 @@ txt_log.place(x=10, y=390)
 repo_button.place(x=10, y=120)
 
 sort_button.place(x=250, y=310)
-delete_button.place(x=420, y=310)
+sort2_button.place(x=420, y=310)
 
 window.mainloop()
