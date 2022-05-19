@@ -17,9 +17,10 @@ def show_warning():
 
 
 def first_task():
+    txt_log.insert(INSERT, "Рабочая папка изменена  на:" + os.getcwd() + "\n")
     rw = ''
     for i in range(len(test1.index)):
-        script = subprocess.run(["python", "1.py", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
+        script = subprocess.run(["python", os.listdir()[0], str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
                                 stdout=subprocess.PIPE)
         if int(str(script.stdout)[2:-1]) == int(test1.loc[i, 'right_answer']):
             rw = 'YES'
@@ -31,16 +32,39 @@ def first_task():
     txt_log.insert(INSERT, "Task1 проверен!\n")
 
 
+def fourth_task():
+    txt_log.insert(INSERT, "Рабочая папка изменена  на:" + os.getcwd() + "\n")
+    rw = ''
+    for i in range(len(test4.index)):
+        path = "D:\\PLAutoChecker\\test_data\\task4\\data_4_" + str(i) + ".txt"
+        script = subprocess.run(["python", os.listdir()[0], path],
+                                stdout=subprocess.PIPE)
+
+        if int(str(script.stdout)[2:-5]) == int(test4.loc[i, 'steps']):
+            rw = 'YES'
+        else:
+            rw = 'ERROR'
+        test_output_4.loc[len(test_output_4.index)] = [str(test4.loc[i, 'array']), str(script.stdout)[2:-5],
+                                                       str(test4.loc[i, 'steps']), rw]
+        print()
+
+    txt_log.insert(INSERT, "Task4 проверен!\n")
+
+
 def output_result():
     txt_test.delete(1.0, END)
     if tasks_choice.get() == "task1":
         txt_test.insert(INSERT, test_output_1)
+    if tasks_choice.get() == "task4":
+        txt_test.insert(INSERT, test_output_4)
 
 
 def sort_errors():
     txt_test.delete(1.0, END)
     if tasks_choice.get() == "task1":
         txt_test.insert(INSERT, test_output_1.sort_values(by="RW"))
+    if tasks_choice.get() == "task4":
+        txt_test.insert(INSERT, test_output_4.sort_values(by="RW"))
 
 
 def repo_button_click():
@@ -51,6 +75,10 @@ def repo_button_click():
         if os.path.exists("task1"):
             os.chdir("task1")
             first_task()
+            os.chdir(os.pardir)
+        if os.path.exists("task4"):
+            os.chdir("task4")
+            fourth_task()
 
     output_button.place(x=10, y=310)
 
@@ -81,7 +109,8 @@ def open_file():
     author.close()
 
     repo_author_info.configure(
-        text="Фамилия: " + author_info[0] + "Имя: " + author_info[1] + "Язык: " + author_info[2])
+        text="Фамилия: " + author_info[0].split(sep='_')[0] + "\nИмя: " + author_info[0].split(sep='_')[1] + "Язык: " +
+             author_info[1])
 
     if os.path.exists("task1"):  # Проверка какие задания сделаны
         tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["task1"])
@@ -105,9 +134,18 @@ test_output_1 = pd.DataFrame({
     'RW': []
 
 })
+
+test_output_4 = pd.DataFrame({
+    'array': [],
+    'output': [],
+    'right_answer': [],
+    'RW': []
+
+})
 pd.options.display.max_rows = 2000  # Увеличиваем максимальный вывод значений датафрейма
 
-test1 = pd.read_csv("test_data/data_1.csv", sep=' ')
+test1 = pd.read_csv("test_data/task1/data_1.csv", sep=' ')
+test4 = pd.read_csv("test_data/task4/data_4_all.csv", sep=';')
 file = ''
 window = Tk()  # Создание окна
 window.title("PLAutoChecker v.0.1")  # Название окна
