@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import pandas as pd
+import re
 
 
 def show_warning():
@@ -19,14 +20,17 @@ def show_warning():
 def first_task():
     txt_log.insert(INSERT, "Рабочая папка изменена  на:" + os.getcwd() + "\n")
     rw = ''
+    output = ''
     for i in range(len(test1.index)):
-        script = subprocess.run(["python", os.listdir()[0], str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
+        script = subprocess.run(["python", "task1.py", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
                                 stdout=subprocess.PIPE)
-        if int(str(script.stdout)[2:-1]) == int(test1.loc[i, 'right_answer']):
+        output = re.sub("[^0-9]", "", str(script.stdout))
+        # if int(str(script.stdout)[2:-1]) == int(test1.loc[i, 'right_answer']):
+        if int(output) == int(test1.loc[i, 'right_answer']):
             rw = 'YES'
         else:
             rw = 'ERROR'
-        test_output_1.loc[len(test_output_1.index)] = [str(script.stdout)[2:-1], str(test1.loc[i, 'right_answer']), rw]
+        test_output_1.loc[len(test_output_1.index)] = [output, str(test1.loc[i, 'right_answer']), rw]
         print()
 
     txt_log.insert(INSERT, "Task1 проверен!\n")
@@ -37,14 +41,15 @@ def fourth_task():
     rw = ''
     for i in range(len(test4.index)):
         path = "D:\\PLAutoChecker\\test_data\\task4\\data_4_" + str(i) + ".txt"
-        script = subprocess.run(["python", os.listdir()[0], path],
+        script = subprocess.run(["python", "task4.py", path],
                                 stdout=subprocess.PIPE)
-
-        if int(str(script.stdout)[2:-5]) == int(test4.loc[i, 'steps']):
+        output = re.sub("[^0-9]", "", str(script.stdout))
+        # if int(str(script.stdout)[2:-5]) == int(test4.loc[i, 'steps']):
+        if int(output) == int(test4.loc[i, 'steps']):
             rw = 'YES'
         else:
             rw = 'ERROR'
-        test_output_4.loc[len(test_output_4.index)] = [str(test4.loc[i, 'array']), str(script.stdout)[2:-5],
+        test_output_4.loc[len(test_output_4.index)] = [str(test4.loc[i, 'array']), output,
                                                        str(test4.loc[i, 'steps']), rw]
         print()
 
