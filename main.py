@@ -32,9 +32,11 @@ def first_task():
             else:
                 rw = 'ERROR'
             test_output_1.loc[len(test_output_1.index)] = [output, str(test1.loc[i, 'right_answer']), rw]
+
         except EXCEPTION as e:
             print(e.__class__)
     txt_log.insert(INSERT, "Task1 проверен!\n")
+
 
 
 def fourth_task():
@@ -59,6 +61,17 @@ def fourth_task():
 
 def output_result():  # Вывод результата, Кнопка Вывести
     txt_test.delete(1.0, END)
+    if tasks_choice.get() == "Вывод":
+
+        txt_test.insert(INSERT, 'task1: ' + str(summary['task1']) + ' баллов\n')
+        txt_test.insert(INSERT, 'task2: ' + str(summary['task2']) + ' баллов\n')
+        txt_test.insert(INSERT, 'task3: ' + str(summary['task3']) + ' баллов\n')
+        txt_test.insert(INSERT, 'task4: ' + str(summary['task4']) + ' баллов\n')
+
+        txt_test.insert(INSERT, 'Сумма: ' + str(summary['task1']+summary['task2']+summary['task3']+summary['task4']) + ' баллов\n')
+        txt_test.insert(INSERT, '__________________________________\n')
+        txt_test.insert(INSERT, str(summary['summary']) + '\n')
+
     if tasks_choice.get() == "task1":
         txt_test.insert(INSERT, test_output_1)
     if tasks_choice.get() == "task4":
@@ -86,12 +99,14 @@ def repo_button_click():  # Основная функция, Кнопка Про
             os.chdir("task4")
             fourth_task()
 
+
     output_button.place(x=10, y=310)
 
 
 def open_file():
     global file
     txt_test.delete(1.0, END)
+    output_button.place(x=1000, y=310)
     test_output_1.drop(test_output_1.index, inplace=True)  # Очищаем ДатаФрейм перед следующим прогоном
     test_output_4.drop(test_output_4.index, inplace=True)
 
@@ -118,6 +133,9 @@ def open_file():
     repo_author_info.configure(  # Вывод информации о проверяемом
         text="Фамилия: " + author_info[0].split(sep='_')[0] + "\nИмя: " + author_info[0].split(sep='_')[1] + "Язык: " +
              author_info[1])
+
+    tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["Вывод"])
+    tasks_choice.current(0)
 
     if os.path.exists("task1"):  # Проверка какие задания сделаны, отрисовка в меню
         tasks_choice['values'] = tuple(list(tasks_choice['values']) + ["task1"])
@@ -149,6 +167,15 @@ test_output_4 = pd.DataFrame({
     'RW': []
 
 })
+
+summary = {
+    'summary': 'тест',
+    'task1': 1,
+    'task2': 2,
+    'task3': 3,
+    'task4': 4,
+}
+
 pd.options.display.max_rows = 2000  # Увеличиваем максимальный вывод значений датафрейма
 
 test1 = pd.read_csv("test_data/task1/data_1.csv", sep=' ')  # Чтение тестовых значений
