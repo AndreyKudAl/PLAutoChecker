@@ -10,6 +10,9 @@ import shutil
 import subprocess
 import pandas as pd
 import re
+import traceback
+import json
+import json_tools
 
 
 def show_warning():  # Вывод варнинга при неоткрытом файле, Кнопка Проверить
@@ -23,20 +26,67 @@ def first_task():
     output = ''
     for i in range(len(test1.index)):
         try:
-            script = subprocess.run(["python", "task1.py", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
+            if repo_language_choice.get() == "Python":
+                script = subprocess.run(["python", "task1.py", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
+                                        stdout=subprocess.PIPE, timeout=3, check=True)
+            if repo_language_choice.get() == "Java":
+                script = subprocess.run(["java", "-jar", "task1.jar", str(test1.loc[i, 'n']), str(test1.loc[i, 'm'])],
+                                        stdout=subprocess.PIPE, timeout=3)
+        except FileExistsError:
+            txt_log.insert(INSERT, "Ошибка: Нет файла task1.py\n")
+            return
+
+        except subprocess.TimeoutExpired:
+            txt_log.insert(INSERT, "Ошибка: Время ожидания истекло, нет аргументов!\n")
+            return
+
+        except subprocess.CalledProcessError as e:
+            txt_log.insert(INSERT, "Ошибка: ", e, "\n")
+            return
+
+        output = re.sub("[^0-9]", "", str(script.stdout))
+
+        if int(output) == int(test1.loc[i, 'right_answer']):
+            rw = 'YES'
+        else:
+            rw = 'ERROR'
+
+        test_output_1.loc[len(test_output_1.index)] = [output, str(test1.loc[i, 'right_answer']), rw]
+
+    txt_log.insert(INSERT, "Task1 успешно проверен!\n")
+
+
+def third_task():
+    global check_task3
+    txt_log.insert(INSERT, "Рабочая папка изменена  на:" + os.getcwd() + "\n")
+    rw = ''
+    output = ''
+    path_values = "D:\\PLAutoChecker\\test_data\\task3\\values.json"
+    path_tests = "D:\\PLAutoChecker\\test_data\\task3\\tests.json"
+    try:
+        if repo_language_choice.get() == "Python":
+            script = subprocess.run(["python", "task3.py", path_tests, path_values],
                                     stdout=subprocess.PIPE, timeout=3)
-            output = re.sub("[^0-9]", "", str(script.stdout))
+        if repo_language_choice.get() == "Java":
+            script = subprocess.run(["java", "-jar", "task3.jar", path_tests, path_values],
+                                    stdout=subprocess.PIPE, timeout=3)
+    except FileExistsError:
+        txt_log.insert(INSERT, "Ошибка: Нет файла task1.py\n")
+        return
 
-            if int(output) == int(test1.loc[i, 'right_answer']):
-                rw = 'YES'
-            else:
-                rw = 'ERROR'
-            test_output_1.loc[len(test_output_1.index)] = [output, str(test1.loc[i, 'right_answer']), rw]
+    except subprocess.TimeoutExpired:
+        txt_log.insert(INSERT, "Ошибка: Время ожидания истекло, нет аргументов!\n")
+        return
 
-        except EXCEPTION as e:
-            print(e.__class__)
-    txt_log.insert(INSERT, "Task1 проверен!\n")
+    except subprocess.CalledProcessError as e:
+        txt_log.insert(INSERT, "Ошибка: ", e, "\n")
+        return
 
+    test_report = open("report.json")
+    test_report = json.load(test_report)
+    check_task3 = json_tools.diff(test3, test_report)
+
+    txt_log.insert(INSERT, "Task3 проверен!\n")
 
 
 def fourth_task():
@@ -45,8 +95,25 @@ def fourth_task():
     output = ''
     for i in range(len(test4.index)):
         path = "D:\\PLAutoChecker\\test_data\\task4\\data_4_" + str(i) + ".txt"
-        script = subprocess.run(["python", "task4.py", path],
-                                stdout=subprocess.PIPE, timeout=3)
+        try:
+            if repo_language_choice.get() == "Python":
+                script = subprocess.run(["python", "task4.py", path],
+                                        stdout=subprocess.PIPE, timeout=3)
+            if repo_language_choice.get() == "Java":
+                script = subprocess.run(["java", "-jar", "task4.jar", path],
+                                        stdout=subprocess.PIPE, timeout=3)
+        except FileExistsError:
+            txt_log.insert(INSERT, "Ошибка: Нет файла task4.py\n")
+            return
+
+        except subprocess.TimeoutExpired:
+            txt_log.insert(INSERT, "Ошибка: Время ожидания истекло, нет аргументов!\n")
+            return
+
+        except subprocess.CalledProcessError as e:
+            txt_log.insert(INSERT, "Ошибка: ", e, "\n")
+            return
+
         output = re.sub("[^0-9]", "", str(script.stdout))
 
         if int(output) == int(test4.loc[i, 'steps']):
@@ -62,18 +129,24 @@ def fourth_task():
 def output_result():  # Вывод результата, Кнопка Вывести
     txt_test.delete(1.0, END)
     if tasks_choice.get() == "Вывод":
-
         txt_test.insert(INSERT, 'task1: ' + str(summary['task1']) + ' баллов\n')
+        txt_test.insert(INSERT, str(summary['task1_sum']) + '\n\n')
         txt_test.insert(INSERT, 'task2: ' + str(summary['task2']) + ' баллов\n')
+        txt_test.insert(INSERT, str(summary['task2_sum']) + '\n\n')
         txt_test.insert(INSERT, 'task3: ' + str(summary['task3']) + ' баллов\n')
+        txt_test.insert(INSERT, str(summary['task3_sum']) + '\n\n')
         txt_test.insert(INSERT, 'task4: ' + str(summary['task4']) + ' баллов\n')
+        txt_test.insert(INSERT, str(summary['task4_sum']) + '\n\n')
 
-        txt_test.insert(INSERT, 'Сумма: ' + str(summary['task1']+summary['task2']+summary['task3']+summary['task4']) + ' баллов\n')
+        txt_test.insert(INSERT, 'Сумма: ' + str(
+            summary['task1'] + summary['task2'] + summary['task3'] + summary['task4']) + ' баллов\n')
         txt_test.insert(INSERT, '__________________________________\n')
         txt_test.insert(INSERT, str(summary['summary']) + '\n')
 
     if tasks_choice.get() == "task1":
         txt_test.insert(INSERT, test_output_1)
+    if tasks_choice.get() == "task3":
+        txt_test.insert(INSERT, check_task3)
     if tasks_choice.get() == "task4":
         txt_test.insert(INSERT, test_output_4)
 
@@ -90,15 +163,18 @@ def repo_button_click():  # Основная функция, Кнопка Про
     if file == '':
         show_warning()
         return
-    if repo_language_choice.get() == "Python":
-        if os.path.exists("task1"):
-            os.chdir("task1")
-            first_task()
-            os.chdir(os.pardir)
-        if os.path.exists("task4"):
-            os.chdir("task4")
-            fourth_task()
 
+    if os.path.exists("task1"):
+        os.chdir("task1")
+        first_task()
+        os.chdir(os.pardir)
+    if os.path.exists("task3"):
+        os.chdir("task3")
+        third_task()
+        os.chdir(os.pardir)
+    if os.path.exists("task4"):
+        os.chdir("task4")
+        fourth_task()
 
     output_button.place(x=10, y=310)
 
@@ -174,15 +250,23 @@ summary = {
     'task2': 2,
     'task3': 3,
     'task4': 4,
+    'task1_sum': 'Сообщение об ошибках 1',
+    'task2_sum': 'Сообщение об ошибках 2',
+    'task3_sum': 'Сообщение об ошибках 3',
+    'task4_sum': 'Сообщение об ошибках 4',
 }
 
 pd.options.display.max_rows = 2000  # Увеличиваем максимальный вывод значений датафрейма
 
 test1 = pd.read_csv("test_data/task1/data_1.csv", sep=' ')  # Чтение тестовых значений
+test3 = open("D:\\PLAutoChecker\\test_data\\task3\\data_report.json")
+# test3 = test3.readlines()
+test3 = json.load(test3)
+check_task3 = []
 test4 = pd.read_csv("test_data/task4/data_4_all.csv", sep=';')
 file = ''
 window = Tk()  # Создание окна
-window.title("PLAutoChecker v.0.1")  # Название окна
+window.title("PLAutoChecker v.0.5")  # Название окна
 window.geometry('875x500')  # Размер окна
 window.resizable(False, False)
 
