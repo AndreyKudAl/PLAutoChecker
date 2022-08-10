@@ -70,19 +70,24 @@ def third_task():
         if repo_language_choice.get() == "Java":
             script = subprocess.run(["java", "-jar", "task3.jar", path_tests, path_values],
                                     stdout=subprocess.PIPE, timeout=3)
-    except FileExistsError:
+    except FileNotFoundError:
         txt_log.insert(INSERT, "Ошибка: Нет файла task1.py\n")
         return
 
     except subprocess.TimeoutExpired:
         txt_log.insert(INSERT, "Ошибка: Время ожидания истекло, нет аргументов!\n")
+        summary['task3_sum'] = "Ошибка: Время ожидания истекло, нет аргументов!"
         return
 
     except subprocess.CalledProcessError as e:
         txt_log.insert(INSERT, "Ошибка: ", e, "\n")
         return
-
-    test_report = open("report.json")
+    try:
+        test_report = open("report.json")
+    except FileNotFoundError:
+        txt_log.insert(INSERT, "Ошибка: Не создан результирующий файл!\n")
+        summary['task3_sum'] = "Ошибка: Не создан результирующий файл!"
+        return
     test_report = json.load(test_report)
     check_task3 = json_tools.diff(test3, test_report)
 
