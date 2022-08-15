@@ -61,8 +61,8 @@ def third_task():
     txt_log.insert(INSERT, "Рабочая папка изменена  на:" + os.getcwd() + "\n")
     rw = ''
     output = ''
-    path_values = "D:\\PLAutoChecker\\test_data\\task3\\values.json"
-    path_tests = "D:\\PLAutoChecker\\test_data\\task3\\tests.json"
+    path_values = default_path + "\\test_data\\task3\\values.json"
+    path_tests = default_path + "\\test_data\\task3\\tests.json"
     try:
         if repo_language_choice.get() == "Python":
             script = subprocess.run(["python", "task3.py", path_tests, path_values],
@@ -99,7 +99,7 @@ def fourth_task():
     rw = ''
     output = ''
     for i in range(len(test4.index)):
-        path = "D:\\PLAutoChecker\\test_data\\task4\\data_4_" + str(i) + ".txt"
+        path = default_path + "\\test_data\\task4\\data_4_" + str(i) + ".txt"
         try:
             if repo_language_choice.get() == "Python":
                 script = subprocess.run(["python", "task4.py", path],
