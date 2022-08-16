@@ -264,7 +264,7 @@ summary = {
 pd.options.display.max_rows = 2000  # Увеличиваем максимальный вывод значений датафрейма
 
 test1 = pd.read_csv("test_data/task1/data_1.csv", sep=' ')  # Чтение тестовых значений
-test3 = open("D:\\PLAutoChecker\\test_data\\task3\\data_report.json")
+test3 = open(default_path + "\\test_data\\task3\\data_report.json")
 # test3 = test3.readlines()
 test3 = json.load(test3)
 check_task3 = []
